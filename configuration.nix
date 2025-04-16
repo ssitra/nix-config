@@ -10,11 +10,24 @@
       ./hardware-configuration.nix
     ];
 
+
+  fileSystems."/mnt/media" = # The mount point you chose (must start with /)
+    { device = "/dev/disk/by-uuid/aea6ebd3-3736-4496-9900-cf2bb81e4b29"; # Use the UUID you found
+      fsType = "ext4";                # Use the FSTYPE you found (e.g., "ext4", "ntfs", "exfat")
+
+      # Common options (adjust as needed):
+      options = [
+        "defaults"  # Standard options (rw, suid, dev, exec, auto, nouser, async)
+        "nofail"    # IMPORTANT for external/non-essential drives: Prevents boot failure if drive isn't connected.
+        "acl"
+      ];
+    };
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
-  # networking.hostName = "nixos"; # Define your hostname.
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  networking.hostName = "nixos"; # Define your hostname.
   # Pick only one of the below networking options.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
@@ -38,8 +51,8 @@
 
   # Enable the X11 windowing system.
   services.xserver.enable = true;
-  services.xserver.displayManager.sddm.enable = true;
-  services.xserver.desktopManager.plasma5.enable = true;
+  services.displayManager.sddm.enable = true;
+  services.xserver.desktopManager.plasma6.enable = true;
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
@@ -82,6 +95,9 @@
     };
   };
 
+  system.autoUpgrade.enable = true;
+  system.autoUpgrade.allowReboot = true;
+
   programs.firefox.enable = true;
 
   # List packages installed in system profile. To search, run:
@@ -91,7 +107,48 @@
     wget
     emacs
     git
+    ntfs3g
+    exfatprogs
+    jellyfin
+    jellyfin-web
+    jellyfin-ffmpeg
+    openssl
+    nss
   ];
+
+  # environment.etc = {
+  #   # Certificate file (public)
+  #   "caddy/certs/nixos.pig-truck.ts.net.crt" = {
+  #     source = nixosCertPath;
+  #     mode = "0444"; # Read-only for all is fine for public cert
+  #     user = "root"; # Owned by root
+  #     group = "root";
+  #   };
+
+  #   # Private key file (sensitive)
+  #   "caddy/certs/nixos.pig-truck.ts.net.key" = {
+  #     source = nixosKeyPath;
+  #     mode = "0440"; # Read-only ONLY for owner (root) and group (caddy)
+  #     user = "root"; # Owned by root
+  #     group = config.services.caddy.group; # CRITICAL: group must be caddy's group
+  #   };
+
+  #   # Add entries for other certificates/keys if you have them
+  #   # "caddy/certs/service.nixos.pig-truck.ts.net.crt" = {
+  #   #   source = serviceCertSourcePath;
+  #   #   mode = "0444"; user = "root"; group = "root";
+  #   # };
+  #   # "caddy/certs/service.nixos.pig-truck.ts.net.key" = {
+  #   #   source = serviceKeySourcePath;
+  #   #   mode = "0440"; user = "root"; group = config.services.caddy.group;
+  #   # };
+  # };
+
+  security.sudo = {
+    enable = true; # Ensure sudo itself is enabled (usually is by default)
+    # This is the key option:
+    wheelNeedsPassword = false; # Set this to false
+  };
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -104,18 +161,152 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+  services.openssh = {
+    enable = true;
+    settings = {
+      PermitRootLogin = "prohibit-password";
+      PasswordAuthentication = false;
+      ChallengeResponseAuthentication = false;
+      KbdInteractiveAuthentication = false;
+    };
+  };
+
+  services.jellyfin = {
+    enable = true;
+    # extraOptions = [
+    #   "--cert=/home/ratso/nixos.tail143db8.ts.net.crt"
+    #   "--cert-key=/home/ratso/nixos.tail143db8.ts.net.key" 
+    # ];
+
+  };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   networking.firewall.enable = false;
+  
+  # services.certbot = {
+  #   enable = true;
+  #   agreeTerms = true;
+  # };
+  nixpkgs.config.permittedInsecurePackages = [
+    "dotnet-sdk-6.0.428"
+    "aspnetcore-runtime-6.0.36"
+  ];
+
+  services.transmission = {
+    enable = true;
+    package = pkgs.transmission_4;
+    openRPCPort = true;
+    settings = {
+      rpc-bind-address = "0.0.0.0"; #Bind to own IP
+      rpc-whitelist = "127.0.0.1,10.0.0.1,192.168.*.*,100.*.*.*"; #Whitelist
+    };
+  };
+
+  
+  services.sonarr = {
+    enable = true;
+  };
+
+  services.radarr = {
+    enable = true;
+  };
+
+  # services.caddy = {
+  #   enable = true;
+  #   user = "caddy";   # Default user
+  #   group = "caddy";  # Default group (must match group below for key access)
+
+  #   virtualHosts = {
+  #     "movies.nixos.pig-truck.ts.net" = { # Use your actual Tailscale hostname
+  #       # NO useACMEHost needed/wanted for manual TLS
+  #       extraConfig = ''
+  #         # Use the RUNTIME paths under /etc
+  #         tls ${nixosCertRuntimePath} ${nixosKeyRuntimePath}
+
+  #         # Reverse proxy to your service (e.g., Jellyfin on port 8096)
+  #         reverse_proxy localhost:8096
+  #       '';
+  #     };
+  #   };
+  # };
+
+  # services.dnsmasq = {
+  #   enable = true;
+  #   settings = {
+  #     listen-address = "100.122.33.91";	
+  #     address = [
+  #       "/nixos.muc.arpa/100.122.33.91"
+	#       "/jellyfin.muc.arpa/100.122.33.91"
+  #       "/jellyfin.muc.arpa/::"
+  #       "/nixos.muc.arpa/::"
+  #     ];
+  #     interface = "tailscale0"; # serve on tailscale interface
+  #     bind-interfaces = true;
+  #   };
+  # };
+
+  # services.caddy = {
+  #   enable = true;
+  #   user = "caddy";   # Default user
+  #   group = "caddy";  # Default group (must match group below for key access)
+    
+  #   virtualHosts = {
+  #     # Jellyfin subdomain
+  #     "jellyfin.muc.arpa" = {
+  #       extraConfig = ''
+  #       tls internal
+  #       bind 100.122.33.91
+  #       reverse_proxy localhost:8096
+  #     '';
+  #     };
+  #   };
+  # };
+
+  
+  # services.dnsmasq = {
+  #   enable = true;
+  #   settings = {
+  #     listen-address = "100.122.33.91";	
+  #     address = [
+  #       "/nixos.muc.arpa/100.122.33.91"
+	#       "/jellyfin.muc.arpa/100.122.33.91"
+  #       "/jellyfin.muc.arpa/::"
+  #       "/nixos.muc.arpa/::"
+  #     ];
+  #     interface = "tailscale0"; # serve on tailscale interface
+  #     bind-interfaces = true;
+  #   };
+  # };
+
+  # services.caddy = {
+  #   enable = true;
+  #   user = "caddy";   # Default user
+  #   group = "caddy";  # Default group (must match group below for key access)
+    
+  #   virtualHosts = {
+  #     # Jellyfin subdomain
+  #     "jellyfin.nixos.pig-truck.ts.net" = {
+  #       extraConfig = ''
+  #       tls {
+  #           internal_issuer 
+  #       }
+  #       reverse_proxy localhost:8096
+  #     '';
+  #     };
+  #   };
+  # };
+
+
+  # tls internal
+  # bind 100.122.33.91
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
   # accidentally delete configuration.nix.
-  system.copySystemConfiguration = true;
+  system.copySystemConfiguration = false;
 
   # This option defines the first version of NixOS you have installed on this particular machine,
   # and is used to maintain compatibility with application data (e.g. databases) created on older NixOS versions.
