@@ -3,7 +3,9 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
 { config, lib, pkgs, ... }:
-
+let
+  tsIp = "100.122.33.91";
+in
 {
   imports =
     [ # Include the results of the hardware scan.
@@ -32,7 +34,16 @@
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
   networking.useDHCP = true;
-  services.tailscale.enable = true;
+
+  services.tailscale = {
+    enable = true;
+    permitCertUid = "caddy";
+    # Add this line to allow Caddy to manage certs via Tailscale:
+    # permitCertUid = config.users.users.caddy.name; # Or simply "caddy" if using default user name
+    # Set useRoutingFeatures if needed for other reasons (subnet routes, exit nodes)
+    # useRoutingFeatures = "client"; # Or "server" or "both"
+  };
+
   
   # Set your time zone.
   time.timeZone = "Europe/Stockholm";
@@ -52,7 +63,7 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
-  services.xserver.desktopManager.plasma6.enable = true;
+  services.desktopManager.plasma6.enable = true;
 
   # Configure keymap in X11
   # services.xserver.xkb.layout = "us";
@@ -95,9 +106,25 @@
     };
   };
 
-  system.autoUpgrade.enable = true;
-  system.autoUpgrade.allowReboot = true;
 
+  system.autoUpgrade = {
+    enable = true;
+    allowReboot = true;
+    
+    # Choose one of these update methods:
+    # 1. For stable channel:
+    # flake = null;
+    # channel = "https://nixos.org/channels/nixos-25.05";
+    
+    # 2. For flakes (since you're using flakes):
+    flake = "github:nixos/nixpkgs/nixos-25.05";
+    flags = [];
+    
+    # Optional: Set a specific time for updates
+    dates = "04:00";
+    randomizedDelaySec = "45min";
+  };
+  
   programs.firefox.enable = true;
 
   # List packages installed in system profile. To search, run:
@@ -107,6 +134,7 @@
     wget
     emacs
     git
+    zsh
     ntfs3g
     exfatprogs
     jellyfin
@@ -115,34 +143,6 @@
     openssl
     nss
   ];
-
-  # environment.etc = {
-  #   # Certificate file (public)
-  #   "caddy/certs/nixos.pig-truck.ts.net.crt" = {
-  #     source = nixosCertPath;
-  #     mode = "0444"; # Read-only for all is fine for public cert
-  #     user = "root"; # Owned by root
-  #     group = "root";
-  #   };
-
-  #   # Private key file (sensitive)
-  #   "caddy/certs/nixos.pig-truck.ts.net.key" = {
-  #     source = nixosKeyPath;
-  #     mode = "0440"; # Read-only ONLY for owner (root) and group (caddy)
-  #     user = "root"; # Owned by root
-  #     group = config.services.caddy.group; # CRITICAL: group must be caddy's group
-  #   };
-
-  #   # Add entries for other certificates/keys if you have them
-  #   # "caddy/certs/service.nixos.pig-truck.ts.net.crt" = {
-  #   #   source = serviceCertSourcePath;
-  #   #   mode = "0444"; user = "root"; group = "root";
-  #   # };
-  #   # "caddy/certs/service.nixos.pig-truck.ts.net.key" = {
-  #   #   source = serviceKeySourcePath;
-  #   #   mode = "0440"; user = "root"; group = config.services.caddy.group;
-  #   # };
-  # };
 
   security.sudo = {
     enable = true; # Ensure sudo itself is enabled (usually is by default)
@@ -181,10 +181,14 @@
   };
 
   # Open ports in the firewall.
-  # networking.firewall.allowedTCPPorts = [ ... ];
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ ];            # none globally
+    interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
+  };
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
-  networking.firewall.enable = false;
+
   
   # services.certbot = {
   #   enable = true;
@@ -205,103 +209,69 @@
     };
   };
 
+  # services.syncthing = {
+  #   enable = true;
+  #   openDefaultPorts = true;
+  #   # Optional: GUI credentials (can be set in the browser instead if you don't want plaintext credentials in your configuration.nix file)
+  #   # or the password hash can be generated with "syncthing generate --config <path> --gui-password=<password>"
+  #   settings = {
+  #     gui = {
+  #       user = "Artis";
+  #       password = "$2a$10$aDXQgOJ0M6l6WUnnM6wjyODN31RRBoF7SLDTB.ZYiaIedmiJaNiLe";
+  #       # Change this from the default to listen on all interfaces
+  #       # address = "0.0.0.0:8384";
+  #     };
+  #     # Optional but recommended for security: restrict to local networks and Tailscale
+  #     allowedNetworks = ["192.168.0.0/16" "100.64.0.0/10"];
+  #   };
+  # };
+  services.caddy = {
+    enable = true;
+    logFormat = "level INFO";
+
+    virtualHosts."nixos.pig-truck.ts.net" = {
+      listenAddresses = [ tsIp ];    # optional but keeps the socket TS‑only
+      extraConfig = ''
+        # --- Jellyfin --------------------------------------------------------
+        handle_path /media* {
+          uri strip_prefix /media
+          reverse_proxy http://localhost:8096
+        }
+
+        handle /transmission* {
+        reverse_proxy http://localhost:9091 {
+           # Add standard headers, these might help asset loading
+           header_up Host {upstream_hostport}
+           header_up X-Real-IP {remote_ip}
+           header_up X-Forwarded-For {remote_ip}
+           header_up X-Forwarded-Proto {scheme}
+        }
+        }
+
+        # --- Syncthing --------------------------------------------------------
+        handle_path /sync* {
+          uri strip_prefix /sync
+          reverse_proxy http://localhost:8384
+        }
+
+        # A simple landing page
+
+        handle / {
+          respond "NixOS Services Hub (via Caddy & Tailscale)" 200
+        }
+      '';
+    };
+  };
   
   services.sonarr = {
     enable = true;
+    openFirewall = true;
   };
 
   services.radarr = {
     enable = true;
+    openFirewall = true;
   };
-
-  # services.caddy = {
-  #   enable = true;
-  #   user = "caddy";   # Default user
-  #   group = "caddy";  # Default group (must match group below for key access)
-
-  #   virtualHosts = {
-  #     "movies.nixos.pig-truck.ts.net" = { # Use your actual Tailscale hostname
-  #       # NO useACMEHost needed/wanted for manual TLS
-  #       extraConfig = ''
-  #         # Use the RUNTIME paths under /etc
-  #         tls ${nixosCertRuntimePath} ${nixosKeyRuntimePath}
-
-  #         # Reverse proxy to your service (e.g., Jellyfin on port 8096)
-  #         reverse_proxy localhost:8096
-  #       '';
-  #     };
-  #   };
-  # };
-
-  # services.dnsmasq = {
-  #   enable = true;
-  #   settings = {
-  #     listen-address = "100.122.33.91";	
-  #     address = [
-  #       "/nixos.muc.arpa/100.122.33.91"
-	#       "/jellyfin.muc.arpa/100.122.33.91"
-  #       "/jellyfin.muc.arpa/::"
-  #       "/nixos.muc.arpa/::"
-  #     ];
-  #     interface = "tailscale0"; # serve on tailscale interface
-  #     bind-interfaces = true;
-  #   };
-  # };
-
-  # services.caddy = {
-  #   enable = true;
-  #   user = "caddy";   # Default user
-  #   group = "caddy";  # Default group (must match group below for key access)
-    
-  #   virtualHosts = {
-  #     # Jellyfin subdomain
-  #     "jellyfin.muc.arpa" = {
-  #       extraConfig = ''
-  #       tls internal
-  #       bind 100.122.33.91
-  #       reverse_proxy localhost:8096
-  #     '';
-  #     };
-  #   };
-  # };
-
-  
-  # services.dnsmasq = {
-  #   enable = true;
-  #   settings = {
-  #     listen-address = "100.122.33.91";	
-  #     address = [
-  #       "/nixos.muc.arpa/100.122.33.91"
-	#       "/jellyfin.muc.arpa/100.122.33.91"
-  #       "/jellyfin.muc.arpa/::"
-  #       "/nixos.muc.arpa/::"
-  #     ];
-  #     interface = "tailscale0"; # serve on tailscale interface
-  #     bind-interfaces = true;
-  #   };
-  # };
-
-  # services.caddy = {
-  #   enable = true;
-  #   user = "caddy";   # Default user
-  #   group = "caddy";  # Default group (must match group below for key access)
-    
-  #   virtualHosts = {
-  #     # Jellyfin subdomain
-  #     "jellyfin.nixos.pig-truck.ts.net" = {
-  #       extraConfig = ''
-  #       tls {
-  #           internal_issuer 
-  #       }
-  #       reverse_proxy localhost:8096
-  #     '';
-  #     };
-  #   };
-  # };
-
-
-  # tls internal
-  # bind 100.122.33.91
 
   # Copy the NixOS configuration file and link it from the resulting system
   # (/run/current-system/configuration.nix). This is useful in case you
