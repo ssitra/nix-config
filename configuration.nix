@@ -2,17 +2,33 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, inputs, ... }:
 let
   tsIp = "100.122.33.91";
+  domain = "armu.me";
 in
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      inputs.sops-nix.nixosModules.sops
     ];
 
+  sops.defaultSopsFile = ./secrets/secrets.yaml;
+  sops.defaultSopsFormat = "yaml";
 
+  sops.age.keyFile = "/home/ratso/.config/sops/age/keys.txt";
+
+  sops.secrets."myservice/my_subdir/my_secret" = {};
+  sops.secrets.CLOUDFLARE_API_TOKEN = {};
+
+
+
+  environment.variables = {
+    EDITOR = "emacs";
+    VISUAL = "emacs";
+  };
+  
   fileSystems."/mnt/media" = # The mount point you chose (must start with /)
     { device = "/dev/disk/by-uuid/aea6ebd3-3736-4496-9900-cf2bb81e4b29"; # Use the UUID you found
       fsType = "ext4";                # Use the FSTYPE you found (e.g., "ext4", "ntfs", "exfat")
@@ -132,8 +148,8 @@ in
   environment.systemPackages = with pkgs; [
     vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
     wget
-    emacs
     git
+    emacs
     zsh
     ntfs3g
     exfatprogs
