@@ -17,13 +17,20 @@ in
   sops.defaultSopsFile = ./secrets/secrets.yaml;
   sops.defaultSopsFormat = "yaml";
 
-  sops.age.keyFile = "/home/ratso/.config/sops/age/keys.txt";
+  sops.age.keyFile = "/etc/sops/keys/keys.txt";
 
-  sops.secrets."myservice/my_subdir/my_secret" = {};
-  sops.secrets.CLOUDFLARE_API_TOKEN = {};
+  sops.secrets = {
+    CLOUDFLARE_API_TOKEN = {
+      # Ensure Caddy user/group can read this file
+      mode = "0440";
+      owner = config.services.caddy.user;
+      group = config.services.caddy.group;
+    };
+    # Remove the 'caddy_cloudflare_env' definition if present
+  };
 
-
-
+  sops.secrets.CLOUDFLARE_API_TOKEN.neededForUsers = true;
+  
   environment.variables = {
     EDITOR = "emacs";
     VISUAL = "emacs";
@@ -243,39 +250,72 @@ in
   # };
   services.caddy = {
     enable = true;
+
+    package = pkgs.caddy.withPlugins {
+      # List the plugins you need here
+      plugins = [
+        "github.com/caddy-dns/cloudflare@v0.1.0"
+      ];
+      hash = "sha256-KnXqw7asSfAvKNSIRap9HfSvnijG07NYI3Yfknblcl4=";
+      # The version is usually automatically determined based on pkgs.caddy
+      # A specific hash might be needed if auto-detection fails or for pinning,
+      # but try without it first. The build will fail with a hash mismatch
+      # message if one is needed, and it will tell you the expected hash.
+    };
+
     logFormat = "level INFO";
 
-    virtualHosts."nixos.pig-truck.ts.net" = {
-      listenAddresses = [ tsIp ];    # optional but keeps the socket TS‑only
-      extraConfig = ''
-        # --- Jellyfin --------------------------------------------------------
-        handle_path /media* {
-          uri strip_prefix /media
-          reverse_proxy http://localhost:8096
-        }
 
-        handle /transmission* {
-        reverse_proxy http://localhost:9091 {
-           # Add standard headers, these might help asset loading
-           header_up Host {upstream_hostport}
-           header_up X-Real-IP {remote_ip}
-           header_up X-Forwarded-For {remote_ip}
-           header_up X-Forwarded-Proto {scheme}
-        }
-        }
+    virtualHosts = {
+      # --- Media Server ---
+      "media.${domain}" = {
+        extraConfig = ''
+          tls {
+            # Use Cloudflare DNS challenge, read token from environment
+            dns cloudflare {file.${config.sops.secrets.CLOUDFLARE_API_TOKEN.path}}
+          }
+          # No path stripping needed, subdomain handles routing
+          reverse_proxy localhost:8096
+        '';
+      };
 
-        # --- Syncthing --------------------------------------------------------
-        handle_path /sync* {
-          uri strip_prefix /sync
-          reverse_proxy http://localhost:8384
-        }
+      # --- Downloads Management ---
+      "downloads.${domain}" = {
+        extraConfig = ''
+          tls {
+            dns cloudflare {file.${config.sops.secrets.CLOUDFLARE_API_TOKEN.path}}
+          }
+          reverse_proxy localhost:9091 {
+                        header_up Host {upstream_hostport}
+                        header_up X-Real-IP {remote_ip}
+                        header_up X-Forwarded-For {remote_ip}
+                        header_up X-Forwarded-Proto {scheme}
+          }
+        '';
+      };
 
-        # A simple landing page
+      # --- File Synchronization ---
+      "sync.${domain}" = {
+        extraConfig = ''
+          tls {
+            dns cloudflare {file.${config.sops.secrets.CLOUDFLARE_API_TOKEN.path}}
+          }
+          reverse_proxy localhost:8384
+        '';
+      };
 
-        handle / {
-          respond "NixOS Services Hub (via Caddy & Tailscale)" 200
-        }
-      '';
+      # --- Optional: Root domain redirect or landing page ---
+      "${domain}" = {
+        extraConfig = ''
+           tls {
+             dns cloudflare {file.${config.sops.secrets.CLOUDFLARE_API_TOKEN.path}}
+           }
+           # Example: Respond with a simple text page
+           respond "Services available on subdomains (media, downloads, etc.)" 200
+           # Or redirect to one of the services:
+           # redir https://media.${domain}{uri} permanent
+         '';
+      };
     };
   };
   

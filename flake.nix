@@ -4,6 +4,8 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     sops-nix.url = "github:Mic92/sops-nix";
+    # caddy-patched.url = "github:strideynet/nixos-caddy-patched/main";
+    # caddy-patched.inputs.nixpkgs.follows = "nixpkgs"; 
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
