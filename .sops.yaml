@@ -1,11 +1,7 @@
 keys:
-  - &primary age1lep29xx8punu5y0pa0fr6ukqt2padntwvhgjl2luk2m9nsuet57s4zx65m
-  - &ratso   age1m425ggu6r4vcrzj38elp0pgf2ydcmyke99z92avdfd0mq6fwh9kqzf4er9
   - &next    age1nc9n30vaqwr3ysvqmal5xya498q74hku0kr8jqj4478aced5svyseh6nyk
 creation_rules:
   - path_regex: secrets/[^/]+\.(yaml|json|env|ini)$
     key_groups:
     - age:
-      - *primary
-      - *ratso
       - *next
