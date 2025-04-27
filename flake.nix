@@ -20,7 +20,7 @@
         system = "x86-64-linux";
         specialArgs = {inherit inputs;};
         modules = [
-          ./configuration-homelab.nix
+          ./machines/configuration-homelab.nix
           sops-nix.nixosModules.sops
           # inputs.home-manager.nixosModules.default
         ];
