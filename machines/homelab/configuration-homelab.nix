@@ -30,12 +30,13 @@ in
 
   sops.secrets.CLOUDFLARE_API_TOKEN = {
     mode = "0440";
-    # owner = config.services.caddy.user;
-    # group = config.services.caddy.group;
-    owner = "caddy";
-    group = "caddy";
-    # neededForUsers = true;
+    owner = config.services.caddy.user;
+    group = config.services.caddy.group;
   };
+
+
+  sops.secrets.cloudflaredCertificate     = { mode = "0440"; };  # no format!
+  sops.secrets.cloudflaredCreds           = { mode = "0440"; };
 
   users.users.media = {
     isNormalUser = false; # Or true if you want it to be a login user
@@ -76,7 +77,7 @@ in
   services.prowlarr.enable = true;
   services.homepage-dashboard.enable = true;
   services.sabnzbd.enable = true;
-    services.caddy = {
+  services.caddy = {
     enable = true;
 
     package = pkgs.caddy.withPlugins {
@@ -88,6 +89,27 @@ in
     };
 
     logFormat = "level INFO";
+  };
+
+
+  # services.cloudflared = {
+  #   enable = true;
+  #   # certificateFile = "${config.sops.secrets.cloudflaredCertificate.path}";
+  #   tunnels = {
+  #     "10d0bbd3-1037-4c5d-853d-e8193b8940be" = {
+  #       credentialsFile = "${config.sops.secrets.cloudflaredCreds.path}";
+  #       default = "http_status:404";
+  #       ingress = {
+  #         "jellyfin.${domain}" = "http://127.0.0.1:8096";   # Jellyfin’s HTTP port
+  #       };
+  #     };
+  #   };
+  # };
+
+  
+  networking.firewall = {
+    interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
+    # allowedTCPPorts  = [ 80 443 ];
   };
 
 
@@ -113,9 +135,6 @@ in
   };
 
 
-  networking.firewall = {
-    interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
-  };
 
 
   services.immich = {
