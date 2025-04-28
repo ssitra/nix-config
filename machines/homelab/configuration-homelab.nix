@@ -7,7 +7,6 @@ let
   tsIp = "100.122.33.91";
   domain = "armu.me";
   # landingPageContent = builtins.readFile ./landing-page.html;
-  landingPageFile = ./landing_page.html;
 in
 {
   imports =
@@ -20,6 +19,7 @@ in
       (self + "/modules/arrs/prowlarr/default.nix")
       (self + "/modules/arrs/sonarr/default.nix")
       (self + "/modules/arrs/radarr/default.nix")
+      (self + "/modules/homepage/default.nix")
       inputs.sops-nix.nixosModules.sops
     ];
 
@@ -28,7 +28,14 @@ in
 
   sops.age.keyFile = "/home/ratso/.config/sops/age/keys.txt";
 
-
+  sops.secrets.CLOUDFLARE_API_TOKEN = {
+    mode = "0440";
+    # owner = config.services.caddy.user;
+    # group = config.services.caddy.group;
+    owner = "caddy";
+    group = "caddy";
+    # neededForUsers = true;
+  };
 
   users.users.media = {
     isNormalUser = false; # Or true if you want it to be a login user
@@ -37,15 +44,6 @@ in
     # home = "/var/lib/homelab"; # Optional home directory
   };
   users.groups.media = {};
-
-  environment.etc."caddy/static/index.html" = {
-    source = landingPageFile;
-    user = config.services.caddy.user;
-    group = config.services.caddy.group;
-    mode = "0444"; # Read-only is sufficient
-  };
-
-
   
   hardware.graphics = {
     enable = true;
@@ -76,7 +74,21 @@ in
   services.sonarr.enable = true;
   services.radarr.enable = true;
   services.prowlarr.enable = true;
+  services.homepage-dashboard.enable = true;
   services.sabnzbd.enable = true;
+    services.caddy = {
+    enable = true;
+
+    package = pkgs.caddy.withPlugins {
+      # List the plugins you need here
+      plugins = [
+        "github.com/caddy-dns/cloudflare@v0.2.1"
+      ];
+      hash = "sha256-saKJatiBZ4775IV2C5JLOmZ4BwHKFtRZan94aS5pO90=";
+    };
+
+    logFormat = "level INFO";
+  };
 
 
   services.tailscale = {
@@ -101,11 +113,9 @@ in
   };
 
 
-
   networking.firewall = {
     interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
   };
-
 
 
   services.immich = {
@@ -124,37 +134,6 @@ in
   users.users.immich.extraGroups = [ "video" "render" ];
 
 
-  services.caddy = {
-    enable = true;
-
-    package = pkgs.caddy.withPlugins {
-      # List the plugins you need here
-      plugins = [
-        "github.com/caddy-dns/cloudflare@v0.1.0"
-      ];
-      hash = "sha256-1tpxaW6wueh4hVmTypLHSgXX/5t3Bf5TGOkbeI2H6nE=";
-    };
-
-    logFormat = "level INFO";
-
-    virtualHosts = {
-      "${domain}" = {
-        extraConfig = ''
-           tls {
-             dns cloudflare {
-             api_token {file.${config.sops.secrets.CLOUDFLARE_API_TOKEN.path}}
-                       }
-             }
-
-           root * /etc/caddy/static
-
-
-           file_server
-         '';
-      };
-    };
-  };
-
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
     "unrar"
   ];
@@ -164,18 +143,6 @@ in
     "dotnet-sdk-6.0.428"
     "aspnetcore-runtime-6.0.36"
   ];
-
-  sops.secrets.CLOUDFLARE_API_TOKEN = {
-    mode = "0440";
-    # owner = config.services.caddy.user;
-    # group = config.services.caddy.group;
-    owner = "caddy";
-    group = "caddy";
-    # neededForUsers = true;
-  };
-
-  
-
 
 
   # Copy the NixOS configuration file and link it from the resulting system
