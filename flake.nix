@@ -18,9 +18,9 @@
     nixosConfigurations = {
       homelab = nixpkgs.lib.nixosSystem {
         system = "x86-64-linux";
-        specialArgs = {inherit inputs;};
+        specialArgs = {inherit inputs self;};
         modules = [
-          ./machines/configuration-homelab.nix
+          ./machines/homelab/configuration-homelab.nix
           sops-nix.nixosModules.sops
           # inputs.home-manager.nixosModules.default
         ];

@@ -1,0 +1,23 @@
+{ config, lib, pkgs, ...}:
+{
+  
+
+  config = lib.mkIf config.services.prowlarr.enable {
+
+    services.radarr = {
+      openFirewall = true;
+    };
+
+    services.caddy.virtualHosts."prowlarr.${config.baseDomain}" = {
+        extraConfig = ''
+          tls {
+            dns cloudflare {
+            api_token {file.${config.sops.secrets.CLOUDFLARE_API_TOKEN.path}}
+                      }
+            }
+           reverse_proxy localhost:9696
+        '';
+
+      };
+    };
+}
