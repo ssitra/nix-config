@@ -19,7 +19,6 @@
 
   networking.hostName = "topper";
 
-  
   networking.firewall = {
     # interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
     # allowedTCPPorts  = [ 80 443 ];

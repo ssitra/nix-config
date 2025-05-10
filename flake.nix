@@ -12,13 +12,17 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, sops-nix, ... }@inputs:{
+  outputs = { self, nixpkgs, home-manager, sops-nix, ... }@inputs:
+    let
+      commonSpecialArgs = { inherit inputs self; };
+    in
+    {
     # use "nixos", or your hostname as the name of the configuration
     # it's a better practice than "default" shown in the video
     nixosConfigurations = {
       homelab = nixpkgs.lib.nixosSystem {
         system = "x86-64-linux";
-        specialArgs = {inherit inputs self;};
+        specialArgs = commonSpecialArgs;
         modules = [
           ./machines/homelab/configuration.nix
           sops-nix.nixosModules.sops
@@ -27,7 +31,7 @@
       };
       topper = nixpkgs.lib.nixosSystem {
         system = "x86-64-linux";
-        specialArgs = {inherit inputs;};
+        specialArgs = commonSpecialArgs;
         modules = [
           ./machines/homelab/configuration.nix
           sops-nix.nixosModules.sops

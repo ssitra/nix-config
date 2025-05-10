@@ -10,6 +10,8 @@ TARGET_USER="${2:-ratso}"
 echo $TARGET_HOST
 echo $TARGET_USER
 
+echo "host/${TARGET_HOST}/disks.nix"
+
 sudo true
 
 sudo nix run github:nix-community/disko \
@@ -18,4 +20,6 @@ sudo nix run github:nix-community/disko \
      -- \
      --mode zap_create_mount \
      "host/${TARGET_HOST}/disks.nix"
+
+sudo nixos-install --flake ".#${TARGET_HOST}"
 
