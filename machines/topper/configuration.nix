@@ -3,23 +3,12 @@
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
 { config, lib, pkgs, inputs, self, ... }:
-let
-  tsIp = "100.122.33.91";
-  domain = "armu.me";
-  # landingPageContent = builtins.readFile ./landing-page.html;
-in
+
 {
   imports =
     [ # Include the results of the hardware scan.
-      ./hardware-config-homelab.nix
+      ./hardware-config.nix
       (self + "/machines/common.nix")
-      (self + "/modules/jellyfin/default.nix")
-      (self + "/modules/transmission/default.nix")
-      (self + "/modules/sabnzbd/default.nix")
-      (self + "/modules/arrs/prowlarr/default.nix")
-      (self + "/modules/arrs/sonarr/default.nix")
-      (self + "/modules/arrs/radarr/default.nix")
-      (self + "/modules/homepage/default.nix")
       inputs.sops-nix.nixosModules.sops
     ];
 
@@ -28,87 +17,11 @@ in
 
   sops.age.keyFile = "/home/ratso/.config/sops/age/keys.txt";
 
-  sops.secrets.CLOUDFLARE_API_TOKEN = {
-    mode = "0440";
-    owner = config.services.caddy.user;
-    group = config.services.caddy.group;
-  };
-
-
-  sops.secrets.cloudflaredCertificate     = { mode = "0440"; };  # no format!
-  sops.secrets.cloudflaredCreds           = { mode = "0440"; };
-
-  users.users.media = {
-    isNormalUser = false; # Or true if you want it to be a login user
-    isSystemUser = true;
-    group = "media";
-    # home = "/var/lib/homelab"; # Optional home directory
-  };
-  users.groups.media = {};
-  
-  hardware.graphics = {
-    enable = true;
-    extraPackages = with pkgs.pkgsi686Linux; [
-      intel-media-driver
-      intel-vaapi-driver
-      libvdpau-va-gl
-    ];
-  };
-  boot.kernelParams = [ "radeon.cik_support=0" "amdgpu.cik_support=1" ];
-
-
-  
-  fileSystems."/mnt/media" = 
-    { device = "/dev/disk/by-uuid/aea6ebd3-3736-4496-9900-cf2bb81e4b29";
-      fsType = "ext4";
-      options = [
-        "defaults" 
-        "nofail"   
-        "acl"
-      ];
-    };
-
-  networking.hostName = "nixos";
-
-  services.jellyfin.enable = true;
-  services.transmission.enable = true;
-  services.sonarr.enable = true;
-  services.radarr.enable = true;
-  services.prowlarr.enable = true;
-  services.homepage-dashboard.enable = true;
-  services.sabnzbd.enable = true;
-  services.caddy = {
-    enable = true;
-
-    package = pkgs.caddy.withPlugins {
-      # List the plugins you need here
-      plugins = [
-        "github.com/caddy-dns/cloudflare@v0.2.1"
-      ];
-      hash = "sha256-saKJatiBZ4775IV2C5JLOmZ4BwHKFtRZan94aS5pO90=";
-    };
-
-    logFormat = "level INFO";
-  };
-
-
-  # services.cloudflared = {
-  #   enable = true;
-  #   # certificateFile = "${config.sops.secrets.cloudflaredCertificate.path}";
-  #   tunnels = {
-  #     "10d0bbd3-1037-4c5d-853d-e8193b8940be" = {
-  #       credentialsFile = "${config.sops.secrets.cloudflaredCreds.path}";
-  #       default = "http_status:404";
-  #       ingress = {
-  #         "jellyfin.${domain}" = "http://127.0.0.1:8096";   # Jellyfin’s HTTP port
-  #       };
-  #     };
-  #   };
-  # };
+  networking.hostName = "topper";
 
   
   networking.firewall = {
-    interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
+    # interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
     # allowedTCPPorts  = [ 80 443 ];
   };
 

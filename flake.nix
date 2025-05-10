@@ -25,11 +25,11 @@
           # inputs.home-manager.nixosModules.default
         ];
       };
-      laptop = nixpkgs.lib.nixosSystem {
+      topper = nixpkgs.lib.nixosSystem {
         system = "x86-64-linux";
         specialArgs = {inherit inputs;};
         modules = [
-          ./configuration.nix
+          ./machines/homelab/configuration-topper.nix
           sops-nix.nixosModules.sops
           # inputs.home-manager.nixosModules.default
         ];
