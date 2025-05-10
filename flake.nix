@@ -20,7 +20,7 @@
         system = "x86-64-linux";
         specialArgs = {inherit inputs self;};
         modules = [
-          ./machines/homelab/configuration-homelab.nix
+          ./machines/homelab/configuration.nix
           sops-nix.nixosModules.sops
           # inputs.home-manager.nixosModules.default
         ];
@@ -29,7 +29,7 @@
         system = "x86-64-linux";
         specialArgs = {inherit inputs;};
         modules = [
-          ./machines/homelab/configuration-topper.nix
+          ./machines/homelab/configuration.nix
           sops-nix.nixosModules.sops
           # inputs.home-manager.nixosModules.default
         ];
