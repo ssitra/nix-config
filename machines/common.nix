@@ -111,13 +111,6 @@
 
 
 
-
-    # Enable the X11 windowing system.
-    services.xserver.enable = true;
-    services.displayManager.sddm.enable = true;
-    services.desktopManager.plasma6.enable = true;
-
-
     i18n.defaultLocale = "en_US.UTF-8";
     console = {
       font = "Lat2-Terminus16";

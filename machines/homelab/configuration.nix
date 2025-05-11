@@ -121,6 +121,10 @@ in
     # allowedTCPPorts  = [ 80 443 ];
   };
 
+  services.xserver.enable = true;
+  services.displayManager.sddm.enable = true;
+  services.desktopManager.plasma6.enable = true;
+
 
   services.tailscale = {
     enable = true;
