@@ -24,17 +24,10 @@
     # allowedTCPPorts  = [ 80 443 ];
   };
 
-
   services.tailscale = {
     enable = true;
     permitCertUid = "caddy";
   };
-
-  environment.systemPackages = with pkgs; [
-    jellyfin
-    jellyfin-web
-    jellyfin-ffmpeg
-  ];
 
   services.openssh = {
     enable = true;
@@ -47,33 +40,6 @@
   };
 
 
-
-
-  services.immich = {
-    enable = true;
-    port = 2283;
-    accelerationDevices = null;
-    openFirewall = true;
-    host = "0.0.0.0";
-    mediaLocation = "/mnt/media/Photos";
-    database = {
-      enable = true; # Make sure this is true
-      # ... other database options
-    };
-  };
-
-  users.users.immich.extraGroups = [ "video" "render" ];
-
-
-  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-    "unrar"
-  ];
-
-  
-  nixpkgs.config.permittedInsecurePackages = [
-    "dotnet-sdk-6.0.428"
-    "aspnetcore-runtime-6.0.36"
-  ];
 
 
   # Copy the NixOS configuration file and link it from the resulting system

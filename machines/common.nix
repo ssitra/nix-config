@@ -2,15 +2,6 @@
 
 {
 
-  options = {
-    baseDomain = lib.mkOption {
-      type = lib.types.str;
-      default = "armu.me";
-      description = "The base domain used for Caddy reverse proxies.";
-    };
-    # Add other common options if needed
-  };
-
   config = {
     # Use the systemd-boot EFI boot loader.
     boot.loader.systemd-boot.enable = true;
