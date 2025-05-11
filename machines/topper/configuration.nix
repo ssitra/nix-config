@@ -8,14 +8,27 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      (self + "/machines/common.nix")
+      "${self}/machines/common.nix"
       inputs.sops-nix.nixosModules.sops
     ];
 
-  sops.defaultSopsFile = "${self}/secrets/secrets.yaml";
-  sops.defaultSopsFormat = "yaml";
+  # sops.defaultSopsFile = "${self}/secrets/secrets.yaml";
+  # sops.defaultSopsFormat = "yaml";
 
-  sops.age.keyFile = "/home/ratso/.config/sops/age/keys.txt";
+  # sops.age.keyFile = "/home/ratso/.config/sops/age/keys.txt";
+  programs.hyprland = {
+    # Install the packages from nixpkgs
+    enable = true;
+    # Whether to enable XWayland
+    xwayland.enable = true;
+  };
+
+  environment.systemPackages = with pkgs; [
+    kitty
+  ];
+
+
+
 
   networking.hostName = "topper";
 

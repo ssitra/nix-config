@@ -24,13 +24,6 @@ in
       inputs.sops-nix.nixosModules.sops
     ];
 
-  # options = {
-  #   baseDomain = lib.mkOption {
-  #     type = lib.types.str;
-  #     default = "armu.me";
-  #     description = "The base domain used for Caddy reverse proxies.";
-  #   };
-  # }g;
   
   sops.defaultSopsFile = "${self}/secrets/secrets.yaml";
   sops.defaultSopsFormat = "yaml";
@@ -120,6 +113,10 @@ in
     interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
     # allowedTCPPorts  = [ 80 443 ];
   };
+
+  services.xserver.enable = true;
+  services.displayManager.sddm.enable = true;
+  services.desktopManager.plasma6.enable = true;
 
 
   services.tailscale = {
