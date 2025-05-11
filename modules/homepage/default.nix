@@ -13,7 +13,7 @@
             {
               "Radarr" = {
                 icon = "radarr.png"; # Or use mdi-/si- icons
-                href = "armu.me:7878"; # <-- ADJUST URL
+                href = "https://radarr.armu.me"; # <-- ADJUST URL
                 description = "Movie Management";
                 # Optional: Monitor service availability via HTTP HEAD/GET
                 # siteMonitor = "http://YOUR_RADARR_IP_OR_HOSTNAME:7878";
@@ -22,7 +22,7 @@
             {
               "Sonarr" = {
                 icon = "sonarr.png";
-                href = "armu.me:8989"; # <-- ADJUST URL
+                href = "https://sonarr.armu.me"; # <-- ADJUST URL
                 description = "Series Management";
 
                 # siteMonitor = "http://YOUR_SONARR_IP_OR_HOSTNAME:8989";
@@ -31,7 +31,7 @@
             {
               "Prowlarr" = {
                 icon = "prowlarr.png";
-                href = "armu.me:9696"; # <-- ADJUST URL
+                href = "https://prowlarr.armu.me"; # <-- ADJUST URL
                 description = "Indexer Management";
               };
             }
@@ -43,7 +43,7 @@
               # Assuming Jellyfish meant Jellyfin
               "Jellyfin" = {
                 icon = "jellyfin.png";
-                href = "armu.me:8096"; # <-- ADJUST URL
+                href = "https://media.armu.me"; # <-- ADJUST URL
                 description = "Media Streaming";
                 # siteMonitor = "http://YOUR_JELLYFIN_IP_OR_HOSTNAME:8096";
               };
@@ -55,7 +55,7 @@
             {
               "Transmission" = {
                 icon = "transmission.png";
-                href = "armu.me:9091"; # <-- ADJUST URL
+                href = "https://downloads.armu.me"; # <-- ADJUST URL
                 description = "Torrent Client";
                 # siteMonitor = "http://YOUR_TRANSMISSION_IP_OR_HOSTNAME:9091";
               };
@@ -63,7 +63,7 @@
             {
               "SABnzbd" = {
                 icon = "sabnzbd.png";
-                href = "armu.me:8080"; # <-- ADJUST URL
+                href = "https://usenet.armu.me"; # <-- ADJUST URL
                 description = "Usenet Client";
                 # siteMonitor = "http://YOUR_SABNZBD_IP_OR_HOSTNAME:8080";
               };
