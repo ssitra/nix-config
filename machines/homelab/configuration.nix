@@ -9,6 +9,7 @@ let
   # landingPageContent = builtins.readFile ./landing-page.html;
 in
 {
+
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-config.nix
@@ -23,6 +24,15 @@ in
       inputs.sops-nix.nixosModules.sops
     ];
 
+  options = {
+    baseDomain = lib.mkOption {
+      type = lib.types.str;
+      default = "armu.me";
+      description = "The base domain used for Caddy reverse proxies.";
+    };
+    # Add other common options if needed
+  };
+  
   sops.defaultSopsFile = "${self}/secrets/secrets.yaml";
   sops.defaultSopsFormat = "yaml";
 
