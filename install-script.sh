@@ -19,7 +19,7 @@ sudo nix run github:nix-community/disko \
      --no-write-lock-file \
      -- \
      --mode zap_create_mount \
-     "host/${TARGET_HOST}/disks.nix"
+     "machines/${TARGET_HOST}/disks.nix"
 
 sudo nixos-install --flake ".#${TARGET_HOST}"
 

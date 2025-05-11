@@ -7,7 +7,7 @@
 {
   imports =
     [ # Include the results of the hardware scan.
-      ./hardware-config.nix
+      ./hardware-configuration.nix
       (self + "/machines/common.nix")
       inputs.sops-nix.nixosModules.sops
     ];
