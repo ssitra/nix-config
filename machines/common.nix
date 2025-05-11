@@ -8,7 +8,9 @@
       description = "The base domain used for Caddy reverse proxies.";
     };
   };
-  
+
+  nix.settings.download-buffer-size = 524288000;
+
   config = {
     # Use the systemd-boot EFI boot loader.
     boot.loader.systemd-boot.enable = true;
@@ -130,7 +132,7 @@
       packages = with pkgs; [
         tree
       ];
-      initialHashedPassword = "$6$sVQqjv.8KtTt2bsK$YNoRGOufpXndqyN4hmKytB4d17dIABLL56Xf82tM8FMG7CyjYHdEfS4frfWRpUNioGUcbL31bNFmmgs/vD/al/";
+      initialHashedPassword = "$y$j9T$rclJGNO5qjBNZmxZU4MSH1$sbKetMCCU1yuAbGgT960moVnVkZHr/1mQFqM7XDs8JC";
       openssh.authorizedKeys = {
         keyFiles = [ "${self}/id_ed25519.pub" ];
       };

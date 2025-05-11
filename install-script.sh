@@ -21,5 +21,10 @@ sudo nix run github:nix-community/disko \
      --mode zap_create_mount \
      "machines/${TARGET_HOST}/disks.nix"
 
+sudo nixos-generate-config --root /mnt
+sudo cp /mnt/etc/nixos/hardware-configuration.nix /tmp/nix-config/machines/topper/hardware-configuration.nix
+sudo chown nixos:users /tmp/nix-config/machines/topper/hardware-configuration.nix
+
+
 sudo nixos-install --flake ".#${TARGET_HOST}"
 
