@@ -132,7 +132,7 @@
       ];
       initialHashedPassword = "$6$sVQqjv.8KtTt2bsK$YNoRGOufpXndqyN4hmKytB4d17dIABLL56Xf82tM8FMG7CyjYHdEfS4frfWRpUNioGUcbL31bNFmmgs/vD/al/";
       openssh.authorizedKeys = {
-        keyFiles = [ "id_ed25519.pub" ];
+        keyFiles = [ "${self}/id_ed25519.pub" ];
       };
     };
 

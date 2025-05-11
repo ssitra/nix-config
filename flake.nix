@@ -21,7 +21,7 @@
     # it's a better practice than "default" shown in the video
     nixosConfigurations = {
       homelab = nixpkgs.lib.nixosSystem {
-        system = "x86-64-linux";
+        system = "x86_64-linux";
         specialArgs = commonSpecialArgs;
         modules = [
           ./machines/homelab/configuration.nix
@@ -30,10 +30,10 @@
         ];
       };
       topper = nixpkgs.lib.nixosSystem {
-        system = "x86-64-linux";
+        system = "x86_64-linux";
         specialArgs = commonSpecialArgs;
         modules = [
-          ./machines/homelab/configuration.nix
+          ./machines/topper/configuration.nix
           sops-nix.nixosModules.sops
           # inputs.home-manager.nixosModules.default
         ];
