@@ -8,7 +8,7 @@
       default = "armu.me";
       description = "The base domain used for Caddy reverse proxies.";
     };
-  };
+
   
   config = {
     nix.settings.download-buffer-size = 524288000;
