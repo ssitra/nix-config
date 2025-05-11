@@ -24,13 +24,6 @@ in
       inputs.sops-nix.nixosModules.sops
     ];
 
-  # options = {
-  #   baseDomain = lib.mkOption {
-  #     type = lib.types.str;
-  #     default = "armu.me";
-  #     description = "The base domain used for Caddy reverse proxies.";
-  #   };
-  # }g;
   
   sops.defaultSopsFile = "${self}/secrets/secrets.yaml";
   sops.defaultSopsFormat = "yaml";
