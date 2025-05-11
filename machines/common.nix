@@ -1,17 +1,17 @@
 { config, lib, pkgs, inputs, self, ... }:
 
+
 {
-  options = {
-    baseDomain = lib.mkOption {
+
+  options.baseDomain = lib.mkOption {
       type = lib.types.str;
       default = "armu.me";
       description = "The base domain used for Caddy reverse proxies.";
     };
   };
-
-  nix.settings.download-buffer-size = 524288000;
-
+  
   config = {
+    nix.settings.download-buffer-size = 524288000;
     # Use the systemd-boot EFI boot loader.
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
