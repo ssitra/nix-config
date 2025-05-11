@@ -13,14 +13,14 @@ in
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-config.nix
-      (self + "/machines/common.nix")
-      (self + "/modules/jellyfin/default.nix")
-      (self + "/modules/transmission/default.nix")
-      (self + "/modules/sabnzbd/default.nix")
-      (self + "/modules/arrs/prowlarr/default.nix")
-      (self + "/modules/arrs/sonarr/default.nix")
-      (self + "/modules/arrs/radarr/default.nix")
-      (self + "/modules/homepage/default.nix")
+      "${self}/machines/common.nix"
+      "${self}/modules/jellyfin/default.nix"
+      "${self}/modules/transmission/default.nix"
+      "${self}/modules/sabnzbd/default.nix"
+      "${self}/modules/arrs/prowlarr/default.nix"
+      "${self}/modules/arrs/sonarr/default.nix"
+      "${self}/modules/arrs/radarr/default.nix"
+      "${self}/modules/homepage/default.nix"
       inputs.sops-nix.nixosModules.sops
     ];
 
