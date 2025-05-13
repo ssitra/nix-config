@@ -66,6 +66,17 @@
     
     programs.firefox.enable = true;
 
+    programs.zsh = {
+      enable = true;
+      interactiveShellInit = ''
+    source ${pkgs.grml-zsh-config}/etc/zsh/zshrc
+
+    # Make user colour green in prompt instead of default blue
+    zstyle ':prompt:grml:left:items:user' pre '%F{green}%B'
+  '';
+      promptInit = ""; # otherwise it'll override the grml prompt
+    };
+
     environment.systemPackages = with pkgs; [
       emacs
       vim
@@ -121,6 +132,7 @@
 
     users.users.ratso = {
       isNormalUser = true;
+      shell = pkgs.zsh;
       extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
       packages = with pkgs; [
         tree

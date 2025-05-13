@@ -11,46 +11,100 @@
       "${self}/machines/common.nix"
       inputs.sops-nix.nixosModules.sops
     ];
+  
+  services.xserver.enable = true;
+  services.displayManager.sddm.enable = true;
+  services.desktopManager.plasma6.enable = true;
 
-  # sops.defaultSopsFile = "${self}/secrets/secrets.yaml";
-  # sops.defaultSopsFormat = "yaml";
-
-  # sops.age.keyFile = "/home/ratso/.config/sops/age/keys.txt";
-  programs.hyprland = {
-    # Install the packages from nixpkgs
-    enable = true;
-    # Whether to enable XWayland
-    xwayland.enable = true;
-  };
-
+  
   environment.systemPackages = with pkgs; [
-    kitty
+    dmenu
+    stow
+    zoxide
+    zathura
+    alacritty
+    audacity
+    evince
+    feh
+    fzf
+    gimp
+    gnumeric
+    gnuplot
+    graphviz
+    hunspell
+    imagemagick
+    inkscape
+    keychain
+    mpv
+    mullvad-vpn
+    nautilus
+    networkmanagerapplet
+    networkmanager-l2tp
+    nsxiv
+    paperkey
+    pdf2svg
+    playerctl
+    qrencode
+    s-tui
+    scrot
+    sct
+    smartmontools
+    sqlitebrowser
+    sxhkd
+    texinfo
+    typst
+    tinymist
+    tor-browser
+    inetutils
+    usbutils
+    yt-dlp
+    dwm
+    dmenu
+  ];
+
+  fonts.packages = with pkgs; [
+    source-code-pro
+    noto-fonts
+    noto-fonts-cjk-sans
+    noto-fonts-emoji
+    liberation_ttf
+    fira-code
+    fira-code-symbols
+    mplus-outline-fonts.githubRelease
+    dina-font
+    proggyfonts
   ];
 
 
-
-
+  # VM Stuff
+  services.qemuGuest.enable = true;
+  services.spice-vdagentd.enable = true;
+  services.fwupd.enable = true;
+  
+  
+  
   networking.hostName = "topper";
 
-  networking.firewall = {
-    # interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
-    # allowedTCPPorts  = [ 80 443 ];
-  };
+  programs.chromium.enable = true;
+  
+  # networking.firewall = {
+  #   # interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
+  #   # allowedTCPPorts  = [ 80 443 ];
+  # };
 
-  services.tailscale = {
-    enable = true;
-    permitCertUid = "caddy";
-  };
+  # services.tailscale = {
+  #   enable = true;
+  # };
 
-  services.openssh = {
-    enable = true;
-    settings = {
-      PermitRootLogin = "prohibit-password";
-      PasswordAuthentication = false;
-      ChallengeResponseAuthentication = false;
-      KbdInteractiveAuthentication = false;
-    };
-  };
+  # services.openssh = {
+  #   enable = true;
+  #   settings = {
+  #     PermitRootLogin = "prohibit-password";
+  #     PasswordAuthentication = false;
+  #     ChallengeResponseAuthentication = false;
+  #     KbdInteractiveAuthentication = false;
+  #   };
+  # };
 
 
 
