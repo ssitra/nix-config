@@ -2,7 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, inputs, self, ... }:
+{ config, lib, pkgs, inputs, fetchFromGithub, self, ... }:
 
 {
   imports =
@@ -15,8 +15,18 @@
   services.xserver.enable = true;
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
+  services.xserver.windowManager.dwm = {
+    enable = true;
+    package = pkgs.dwm.overrideAttrs {
+      src = pkgs.fetchFromGitHub {
+        owner = "ssitra";
+        repo = "dwm";
+        rev = "c47f6c321505c686e3b112d2d9923cc73739ae10";
+        sha256 = "sha256-285Hab5g3eynTLAfvtRFXbFhwjKyfGEiv2o26UbWlag=";
+      };
+    };
+  };
 
-  
   environment.systemPackages = with pkgs; [
     dmenu
     stow
@@ -58,7 +68,6 @@
     inetutils
     usbutils
     yt-dlp
-    dwm
     dmenu
   ];
 
