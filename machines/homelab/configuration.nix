@@ -20,6 +20,7 @@ in
       "${self}/modules/arrs/prowlarr/default.nix"
       "${self}/modules/arrs/sonarr/default.nix"
       "${self}/modules/arrs/radarr/default.nix"
+      "${self}/modules/gitea/default.nix"
       "${self}/modules/homepage/default.nix"
       inputs.sops-nix.nixosModules.sops
     ];
@@ -79,6 +80,7 @@ in
   services.prowlarr.enable = true;
   services.homepage-dashboard.enable = true;
   services.sabnzbd.enable = true;
+  services.gitea.enable = true;
   services.caddy = {
     enable = true;
 
