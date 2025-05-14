@@ -70,6 +70,18 @@
             }
           ];
         }
+        {
+          "Other" = [
+            {
+              "Gitea" = {
+                icon = "gitea.png";
+                href = "https://git.armu.me"; # <-- ADJUST URL
+                description = "Git Dashboard";
+                # siteMonitor = "http://YOUR_TRANSMISSION_IP_OR_HOSTNAME:9091";
+              };
+            }
+          ];
+        }
       ];
 
       
