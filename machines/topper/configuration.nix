@@ -2,7 +2,7 @@
 # your system. Help is available in the configuration.nix(5) man page, on
 # https://search.nixos.org/options and in the NixOS manual (`nixos-help`).
 
-{ config, lib, pkgs, inputs, fetchFromGithub, self, ... }:
+{ config, lib, pkgs, inputs, self, ... }:
 
 {
   imports =
@@ -18,8 +18,9 @@
   services.xserver.windowManager.dwm = {
     enable = true;
     package = pkgs.dwm.overrideAttrs {
-      src = pkgs.fetchFromGitHub {
-        owner = "ssitra";
+      src = pkgs.fetchFromGitea {
+        domain = "armu.me";
+        owner = "artis";
         repo = "dwm";
         rev = "c47f6c321505c686e3b112d2d9923cc73739ae10";
         sha256 = "sha256-285Hab5g3eynTLAfvtRFXbFhwjKyfGEiv2o26UbWlag=";
@@ -101,9 +102,9 @@
   #   # allowedTCPPorts  = [ 80 443 ];
   # };
 
-  # services.tailscale = {
-  #   enable = true;
-  # };
+  services.tailscale = {
+    enable = true;
+  };
 
   # services.openssh = {
   #   enable = true;
