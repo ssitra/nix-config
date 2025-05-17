@@ -60,9 +60,21 @@ in
   boot.kernelParams = [ "radeon.cik_support=0" "amdgpu.cik_support=1" ];
 
 
+
+
   
-  fileSystems."/mnt/media" = 
-    { device = "/dev/disk/by-uuid/aea6ebd3-3736-4496-9900-cf2bb81e4b29";
+  fileSystems = {
+    "/mnt/media" = {
+      device = "/dev/disk/by-uuid/aea6ebd3-3736-4496-9900-cf2bb81e4b29";
+      fsType = "ext4";
+      options = [
+        "defaults" 
+        "nofail"   
+        "acl"
+      ];
+    };
+    "/mnt/downloads" = {
+      device = "/dev/disk/by-label/downloads";
       fsType = "ext4";
       options = [
         "defaults" 

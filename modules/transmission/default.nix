@@ -5,11 +5,13 @@
     services.transmission = {
       user = "media";
       group = "media";
-
+      
       
       package = pkgs.transmission_4;
       openRPCPort = true;
       settings = {
+        download-dir = "/mnt/downloads/transmission/Downloads";
+        incomplete-dir = "/mnt/downloads/transmission/Incomplete";
         umask = 2;
         rpc-bind-address = "0.0.0.0"; #Bind to own IP
         rpc-whitelist = "127.0.0.1,10.0.0.1,192.168.*.*,100.*.*.*"; #Whitelist
