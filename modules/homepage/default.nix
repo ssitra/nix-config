@@ -7,6 +7,7 @@
     services.homepage-dashboard = {
       allowedHosts = "*";
       openFirewall = true;
+      settings = {favicon = "https://fav.farm/😘";};
       services = [
         {
           "Media Management" = [
