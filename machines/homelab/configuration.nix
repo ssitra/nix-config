@@ -20,10 +20,40 @@ in
       "${self}/modules/arrs/prowlarr/default.nix"
       "${self}/modules/arrs/sonarr/default.nix"
       "${self}/modules/arrs/radarr/default.nix"
+      "${self}/modules/arrs/lidarr/default.nix"
       "${self}/modules/gitea/default.nix"
+      "${self}/modules/karakeep/default.nix"
+      "${self}/modules/paperless/default.nix"
+      "${self}/modules/immich/default.nix"
+      # "${self}/modules/calibre/default.nix"
       "${self}/modules/homepage/default.nix"
       inputs.sops-nix.nixosModules.sops
     ];
+
+  # services.calibre-server= {
+  #   enable = true;
+  #   user = "media";
+  #   group = "media";
+  #   port = 8083;
+  #   libraries = [
+  #     "/mnt/media/Books"
+  #   ];
+  # };
+
+  # services.calibre-web= {
+  #   enable = true;
+  #   user = "media";
+  #   group = "media";
+  #   listen = {
+  #     ip = "0.0.0.0";
+  #     port = 8084;
+  #   };
+  #   options = {
+  #     calibreLibrary = "/mnt/media/Books";
+  #     enableBookUploading = true;
+  #     enableBookConversion = true;
+  #   };
+  # };
 
   
   sops.defaultSopsFile = "${self}/secrets/secrets.yaml";
@@ -40,7 +70,18 @@ in
 
   sops.secrets.cloudflaredCertificate     = { mode = "0440"; };  # no format!
   sops.secrets.cloudflaredCreds           = { mode = "0440"; };
+  sops.secrets.OPENAI_API_KARAKEEP        = {
+    mode = "0440";
+    restartUnits = [ "karakeep-web.service" "karakeep-worker.service" ];
+  };
 
+  sops.templates."karakeep.env".content = ''
+    OPENAI_API_KEY=${config.sops.placeholder."OPENAI_API_KARAKEEP"}
+  '';
+
+
+  
+  
   users.users.media = {
     isNormalUser = false; # Or true if you want it to be a login user
     isSystemUser = true;
@@ -82,6 +123,7 @@ in
         "acl"
       ];
     };
+  };
 
   networking.hostName = "nixos";
 
@@ -90,9 +132,21 @@ in
   services.sonarr.enable = true;
   services.radarr.enable = true;
   services.prowlarr.enable = true;
+  services.lidarr.enable = true;
   services.homepage-dashboard.enable = true;
   services.sabnzbd.enable = true;
   services.gitea.enable = true;
+  services.paperless.enable = true;
+  services.immich.enable = true;
+
+  services.karakeep = {
+    enable = true;
+    #    environmentFile = "${config.sops.secrets.cloudflaredCreds.path}";
+    environmentFile = config.sops.templates."karakeep.env".path;
+  };
+
+
+  
   services.caddy = {
     enable = true;
 
@@ -101,31 +155,31 @@ in
       plugins = [
         "github.com/caddy-dns/cloudflare@v0.2.1"
       ];
-      hash = "sha256-saKJatiBZ4775IV2C5JLOmZ4BwHKFtRZan94aS5pO90=";
+      hash = "sha256-AcWko5513hO8I0lvbCLqVbM1eWegAhoM0J0qXoWL/vI=";
     };
 
     logFormat = "level INFO";
   };
 
 
-  # services.cloudflared = {
-  #   enable = true;
-  #   # certificateFile = "${config.sops.secrets.cloudflaredCertificate.path}";
-  #   tunnels = {
-  #     "10d0bbd3-1037-4c5d-853d-e8193b8940be" = {
-  #       credentialsFile = "${config.sops.secrets.cloudflaredCreds.path}";
-  #       default = "http_status:404";
-  #       ingress = {
-  #         "jellyfin.${domain}" = "http://127.0.0.1:8096";   # Jellyfin’s HTTP port
-  #       };
-  #     };
-  #   };
-  # };
+  services.cloudflared = {
+    enable = true;
+    # certificateFile = "${config.sops.secrets.cloudflaredCertificate.path}";
+    tunnels = {
+      "10d0bbd3-1037-4c5d-853d-e8193b8940be" = {
+        credentialsFile = "${config.sops.secrets.cloudflaredCreds.path}";
+        default = "http_status:404";
+        ingress = {
+          "jellyfin.${domain}" = "http://127.0.0.1:8096";   # Jellyfin’s HTTP port
+        };
+      };
+    };
+  };
 
   
   networking.firewall = {
-    interfaces.tailscale0.allowedTCPPorts = [ 80 443 ];
-    # allowedTCPPorts  = [ 80 443 ];
+    interfaces.tailscale0.allowedTCPPorts = [ 22 80 443 ];
+    allowedTCPPorts  = [ 80 443 ];
   };
 
   services.xserver.enable = true;
@@ -154,23 +208,24 @@ in
     };
   };
 
+  services.gvfs.enable = true;
 
 
 
-  services.immich = {
-    enable = true;
-    port = 2283;
-    accelerationDevices = null;
-    openFirewall = true;
-    host = "0.0.0.0";
-    mediaLocation = "/mnt/media/Photos";
-    database = {
-      enable = true; # Make sure this is true
-      # ... other database options
-    };
-  };
+  # services.immich = {
+  #   enable = true;
+  #   port = 2283;
+  #   accelerationDevices = null;
+  #   openFirewall = true;
+  #   host = "0.0.0.0";
+  #   mediaLocation = "/mnt/media/Photos";
+  #   database = {
+  #     enable = true; # Make sure this is true
+  #     # ... other database options
+  #   };
+  # };
 
-  users.users.immich.extraGroups = [ "video" "render" ];
+  # users.users.immich.extraGroups = [ "video" "render" ];
 
 
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [

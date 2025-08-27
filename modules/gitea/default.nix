@@ -26,6 +26,7 @@
         server = {
           DOMAIN    = "${config.baseDomain}";  # what shows up in clone/push URLs
           SSH_PORT  = 22;               # displayed, not listened‑on
+          HTTP_PORT = 3001;
         };
       };
 
@@ -39,7 +40,7 @@
             api_token {file.${config.sops.secrets.CLOUDFLARE_API_TOKEN.path}}
                       }
             }
-          reverse_proxy localhost:3000
+          reverse_proxy localhost:3001
         '';
       };
     };
