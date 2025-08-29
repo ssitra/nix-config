@@ -35,20 +35,23 @@
       pulse.enable = true;
     };
 
+    
     system.autoUpgrade = {
       enable = true;
       allowReboot = true;
-      
-      # Choose one of these update methods:
-      # 1. For stable channel:
-      # flake = null;
-      # channel = "https://nixos.org/channels/nixos-25.05";
-      
-      # 2. For flakes (since you're using flakes):
-      flake = "github:nixos/nixpkgs/nixos-unstable";
-      flags = [];
-      
-      # Optional: Set a specific time for updates
+
+      # Point to *your* system flake, not nixpkgs
+      flake = "/etc/nixos#${config.networking.hostName}";
+
+      # Have the timer update the nixpkgs input in flake.lock, then rebuild
+      flags = [
+        "--update-input" "nixpkgs"
+        "--update-input" "home-manager"
+        "--update-input" "sops-nix"
+        "--commit-lock-file"
+      ];
+
+      # Schedule
       dates = "04:00";
       randomizedDelaySec = "45min";
     };
