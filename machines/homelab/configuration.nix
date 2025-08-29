@@ -30,6 +30,33 @@ in
       inputs.sops-nix.nixosModules.sops
     ];
 
+  networking.useDHCP = false;
+  systemd.network.enable = true;
+
+  services.resolved.enable = true;
+  systemd.network.wait-online.enable = false;
+
+  systemd.network.networks."10-lan" = {
+    matchConfig.PermanentMACAddress = "40:8d:5c:54:ea:fb";
+
+    networkConfig = {
+      DHCP = "ipv4";               # or "yes" for IPv4+IPv6
+      IPv6AcceptRA = false;        # accept IPv6 router advertisements
+      # KeepConfiguration = "dhcp";
+    };
+
+    dhcpV4Config = {
+      ClientIdentifier = "mac"; # matches how most routers do reservations
+      SendHostname = true;
+      UseDNS = true;
+      UseRoutes = true;
+    };
+    
+    # Don’t stall boot on unused/bounced links
+    linkConfig.RequiredForOnline = "carrier";
+  };
+
+
   # services.calibre-server= {
   #   enable = true;
   #   user = "media";
@@ -125,7 +152,7 @@ in
     };
   };
 
-  networking.hostName = "nixos";
+  networking.hostName = "homelab";
 
   services.jellyfin.enable = true;
   services.transmission.enable = true;
