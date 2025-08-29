@@ -16,28 +16,28 @@
     let
       commonSpecialArgs = { inherit inputs self; };
     in
-    {
-    # use "nixos", or your hostname as the name of the configuration
-    # it's a better practice than "default" shown in the video
-    nixosConfigurations = {
-      homelab = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = commonSpecialArgs;
-        modules = [
-          ./machines/homelab/configuration.nix
-          sops-nix.nixosModules.sops
-          # inputs.home-manager.nixosModules.default
-        ];
+      {
+        # use "nixos", or your hostname as the name of the configuration
+        # it's a better practice than "default" shown in the video
+        nixosConfigurations = {
+          homelab = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = commonSpecialArgs;
+            modules = [
+              ./machines/homelab/configuration.nix
+              sops-nix.nixosModules.sops
+              # inputs.home-manager.nixosModules.default
+            ];
+          };
+          topper = nixpkgs.lib.nixosSystem {
+            system = "x86_64-linux";
+            specialArgs = commonSpecialArgs;
+            modules = [
+              ./machines/topper/configuration.nix
+              sops-nix.nixosModules.sops
+              # inputs.home-manager.nixosModules.default
+            ];
+          };
+        };
       };
-      topper = nixpkgs.lib.nixosSystem {
-        system = "x86_64-linux";
-        specialArgs = commonSpecialArgs;
-        modules = [
-          ./machines/topper/configuration.nix
-          sops-nix.nixosModules.sops
-          # inputs.home-manager.nixosModules.default
-        ];
-      };
-    };
-  };
 }
