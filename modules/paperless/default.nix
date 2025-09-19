@@ -27,7 +27,7 @@ in
       mediaDir = "/mnt/media/Paperless/media";
 
       # inbox
-      consumptionDir = "/mnt/media/Paperless/consume";
+      consumptionDir = "/srv/scans";
       consumptionDirIsPublic = true;
 
       # local Postgres
@@ -40,7 +40,9 @@ in
       settings = {
         PAPERLESS_URL             = "https://${vhost}";
         PAPERLESS_TIME_ZONE       = "Europe/Stockholm";
-        PAPERLESS_OCR_LANGUAGE    = "eng";
+        PAPERLESS_OCR_LANGUAGE    = "swe+eng";
+
+        
         PAPERLESS_FILENAME_FORMAT = "{created}-{title}";
 
         PAPERLESS_TIKA_ENABLED = false;

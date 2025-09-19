@@ -56,6 +56,70 @@ in
     linkConfig.RequiredForOnline = "carrier";
   };
 
+  # Service account for the scanner
+  users.users.scanner = {
+    isNormalUser = true;
+    description = "Scanner service account";
+    createHome = false;
+    group = "scans";
+  };
+  users.groups.scans = {};
+
+  # Create a dedicated share dir with sane perms
+  # 2775 => group sticky bit so new files/dirs keep group "scans"
+  systemd.tmpfiles.rules = [
+    "d /srv/scans 2775 scanner scans -"
+  ];
+
+  # Samba
+  services.samba = {
+    enable = true;
+    openFirewall = true;
+    securityType = "user";  # don't also set "security" in [global]
+    settings = {
+      global = {
+        "workgroup" = "WORKGROUP";
+        "server string" = "NixOS Scanner Server";
+        "netbios name" = "nixos-server";
+        "map to guest" = "Bad User";
+        # Prefer CIDR — only your LANs:
+        "hosts allow" = "192.168.0.0/24 192.168.1.0/24 127.0.0.1";
+        # optional: keep logs sane
+        # "log file" = "/var/log/samba/%m.log";
+        # "max log size" = "2000";
+      };
+
+      scans = {
+        "path" = "/srv/scans";
+        "browseable" = "yes";
+        "read only" = "no";
+        "guest ok" = "no";               # require auth
+        "valid users" = "scanner";
+        "create mask" = "0664";
+        "directory mask" = "2775";
+        "force group" = "scans";         # keep group consistent
+        # "force user" = "paperless";
+        # "force group" = "paperless";
+        # optional: if you only ever write as 'scanner', uncomment:
+        # "force user" = "scanner";
+        # optional: inherit perms from parent dir
+        # "inherit permissions" = "yes";
+      };
+    };
+  };
+
+# WSD discovery (helps Windows 10/11 & some printers)
+services.samba-wsdd = {
+  enable = true;
+  openFirewall = true;
+};
+
+# Firewall (Samba module opens the right ports already)
+networking.firewall = {
+  enable = true;
+  allowPing = true;
+};
+
 
   # services.calibre-server= {
   #   enable = true;
@@ -171,6 +235,9 @@ in
     #    environmentFile = "${config.sops.secrets.cloudflaredCreds.path}";
     environmentFile = config.sops.templates."karakeep.env".path;
   };
+
+  users.users.paperless.extraGroups = [ "scans" ];
+  users.extraGroups.scans.members = [ "paperless" ];
 
 
   
