@@ -139,7 +139,7 @@
       packages = with pkgs; [
         tree
       ];
-      initialHashedPassword = "$y$j9T$rclJGNO5qjBNZmxZU4MSH1$sbKetMCCU1yuAbGgT960moVnVkZHr/1mQFqM7XDs8JC";
+      initialHashedPassword = "$y$j9T$I58TsLkZR.sA1ZYQq/mTz0$UJ.9ei7GHydmQvd/c.eSsHqVDHueiz5JBTHH5tb.Cr.";
       openssh.authorizedKeys = {
         keyFiles = [ "${self}/id_ed25519.pub" ];
       };
