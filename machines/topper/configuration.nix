@@ -90,7 +90,11 @@
   services.qemuGuest.enable = true;
   services.spice-vdagentd.enable = true;
   services.fwupd.enable = true;
-  
+
+  boot.initrd.luks.devices.crypted = {
+    device = "/dev/disk/by-partlabel/cryptroot";
+    allowDiscards = true;
+  };
   
   
   networking.hostName = "topper";

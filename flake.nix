@@ -4,15 +4,19 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     sops-nix.url = "github:Mic92/sops-nix";
-    # caddy-patched.url = "github:strideynet/nixos-caddy-patched/main";
-    # caddy-patched.inputs.nixpkgs.follows = "nixpkgs"; 
+    disko = {
+      url = "github:nix-community/disko/latest";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # caddy-patched.url = "github:strideynet/nixos-caddy-patched/main";
+    # caddy-patched.inputs.nixpkgs.follows = "nixpkgs"; 
   };
 
-  outputs = { self, nixpkgs, home-manager, sops-nix, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, sops-nix, disko, ... }@inputs:
     let
       commonSpecialArgs = { inherit inputs self; };
     in
@@ -35,7 +39,9 @@
             modules = [
               ./machines/topper/configuration.nix
               sops-nix.nixosModules.sops
-              # inputs.home-manager.nixosModules.default
+              disko.nixosModules.disko
+              ./machines/topper/disks.nix
+              inputs.home-manager.nixosModules.default
             ];
           };
         };
