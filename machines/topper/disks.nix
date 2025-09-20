@@ -48,7 +48,6 @@ in
               type = "luks";
               name = "crypted";
               settings = luksSettings;
-              additionalKeyFiles = extraKeyFiles;
 
               content = {
                 type = "btrfs";
