@@ -7,17 +7,13 @@
 # /tmp/single-luks-btrfs.nix
 { lib ? import <nixpkgs/lib> {}
 , disk ? "/dev/vda"
-, useKeyFile ? false
-, keyFile ? "/tmp/secret.key"
-, extraKeyFiles ? [ ]
 , ...
 }:
 
 let
   swapSize = "8G";
   luksSettings =
-    { allowDiscards = true; } //
-    (lib.optionalAttrs useKeyFile { keyFile = keyFile; });
+    { allowDiscards = true; };
 
   swapSubvol =
     lib.optionalAttrs (swapSize != "0") {
