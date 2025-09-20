@@ -10,11 +10,11 @@
 , useKeyFile ? false
 , keyFile ? "/tmp/secret.key"
 , extraKeyFiles ? [ ]
-, swapSize ? "8G"   # set to "0" to skip swapfile creation
 , ...
 }:
 
 let
+  swapSize = "8G";
   luksSettings =
     { allowDiscards = true; } //
     (lib.optionalAttrs useKeyFile { keyFile = keyFile; });
